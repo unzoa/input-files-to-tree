@@ -33,15 +33,16 @@ export function filesPathTransformToTree (files, message = '') {
   function superFunc (dirPathArr, externalData = {}) {
     // 查询dirPathArr
     dirPathArr.forEach((dirPath, dirPathChildrenLevel) => {
-      let isfirstLevelLabelExist = false // 第一层是否存在了
-
       function addNode (children, isRoot) {
+        // newChildren获取的正确
+        // 但是需要判断label不存在才能执行addNode
         let hasNode = false
         children.forEach(child => {
           if (child.label === dirPath) {
             hasNode = true
           }
         })
+
         if (!hasNode) { // 判断节点不存在
           id++
           children.push({
@@ -55,47 +56,37 @@ export function filesPathTransformToTree (files, message = '') {
         }
       }
 
+      let isfirstLevelLabelExist = false // 第一层是否存在了
       // 匹配超集
       treeData.forEach(relativePathObj => { // {label:'', children: []}
-        if (dirPathChildrenLevel === 0) { // 判断第一层是否存在这个label, 只判断一次
-          if (dirPath === relativePathObj.label) {
-            isfirstLevelLabelExist = true
-            return false
-          }
-        } else {
-          // 利用对象子集的拼接赋值
-          let newChildren = relativePathObj.children // 第一层children[array]
+        // 利用对象子集的拼接赋值
+        let newChildren = relativePathObj.children // 第一层children[array]
 
-          switch (dirPathChildrenLevel) {
-            case 1:
-              let hasNode = false
-              newChildren.forEach(child => {
-                if (child.label === dirPath) {
-                  hasNode = true
+        switch (dirPathChildrenLevel) {
+          case 0: // 判断第一层是否存在这个label, 只判断一次
+            if (dirPath === relativePathObj.label) {
+              isfirstLevelLabelExist = true
+              return false
+            }
+            break
+
+          case 1:
+            addNode(newChildren)
+            break
+
+          default:
+            let level = 1 // 每层只有一个children，查询在第几层children
+            while (level < dirPathChildrenLevel) { // dirPathChildrenLevel >= 2
+              newChildren.forEach((child, childIndex) => {
+                if (child.label === dirPathArr[level]) { // 该层上包含这个path
+                  newChildren = child.children
                   return false
                 }
               })
-              if (!hasNode) {
-                addNode(newChildren)
-              }
-              break
-
-            default:
-              let level = 1 // 每层只有一个children，查询在第几层children
-              while (level < dirPathChildrenLevel) { // dirPathChildrenLevel >= 2
-                newChildren.forEach((child, childIndex) => {
-                  if (child.label === dirPathArr[level]) { // 该层上包含这个path
-                    newChildren = child.children
-                    return false
-                  }
-                })
-                level++
-              }
-              // newChildren获取的正确，
-              // 但是需要判断label不存在才能执行addNode
-              addNode(newChildren)
-              break
-          }
+              level++
+            }
+            addNode(newChildren)
+            break
         }
       })
 
@@ -139,8 +130,8 @@ function sortTreeData (treeData) {
         : filesArr.push(child)
     })
     rootNode.children = [
-      ...foldersArr,
-      ...filesArr
+      ...filesArr,
+      ...foldersArr
     ]
   }
   return treeData
