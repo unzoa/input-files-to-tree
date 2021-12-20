@@ -1,7 +1,6 @@
 /**
- * [filesPathTransformToTree 获取input type=file上传的files，转换成tree数据格式]
+ * [treeify 获取input type=file上传的files，转换成tree数据格式]
  * @param  {[arrar]}             files   []
- * @param  {[String || number]}  message [文件在树上的描述]
  * @return {[array][number]}             [tree]
  * [tree数据格式]
  * [
@@ -15,16 +14,16 @@
  *        label: '1-1-1',
  *        children: []
  *      }],
- *      message: '',
  *      ...externalData // 后期需要添加节点数据
  *    }]
  *  }
  * ]
  */
 
-export function filesPathTransformToTree (files, message = '') {
+export default function treeify (files) {
   let treeData = []
   let id = 1
+
   /**
    * [superFunc 递归去添加子集]
    * @param  {[type]} dirPathArr   [文件的相对路径的数组]['1', '1-1', '1-1-1', 'a-a-a-a']
@@ -50,7 +49,6 @@ export function filesPathTransformToTree (files, message = '') {
             fullPath: isRoot ? dirPath : dirPathArr.slice(0, dirPathChildrenLevel).join('/') + '/' + dirPath,
             label: dirPath,
             children: [],
-            message,
             ...externalData
           })
         }
@@ -141,11 +139,10 @@ function sortTreeData (treeData) {
  * [getTreeNode 根据完整路径, 1:查找treeData的节点; 2:设置文件描述]
  * @param  {[type]} treeData      [树]
  * @param  {[type]} filePath      [文件的相对路径]
- * @param  {String} message       [设置节点在树上的描述]
  * @param  {Object} externalData  [节点上增加扩展数据]
  * @return {[type]}               [文件在树上的节点]
  */
-export function getTreeNode (treeData, filePath, message = '', externalData = {}) {
+export function getTreeNode (treeData, filePath, externalData = {}) {
   let nodeItem = {}
   let filePathArr = filePath.split('/')
 
@@ -170,10 +167,6 @@ export function getTreeNode (treeData, filePath, message = '', externalData = {}
         // 判断子集的label在哪里
         if (child.label === path) {
           if (!child.children.length) {
-            if (message) {
-              child.message = message
-            }
-
             // 扩展数据
             for (const i in externalData) {
               child[i] = externalData[i]

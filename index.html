@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <input type="file" name="" webkitdirectory id="files">
+
+  <script type="module">
+    import treeify from './filesPathTransformToTree.js'
+
+    document.getElementById('files').onchange = e => {
+      const tar = Array.from(e.target.files).map(i => {
+        i.externalData = {haha: 'hahah'}
+        return i
+      })
+
+      console.log(tar)
+      const d = treeify(tar)
+      console.log(JSON.stringify(d))
+    }
+  </script>
+
+
+</body>
+</html>
